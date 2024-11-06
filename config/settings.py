@@ -71,6 +71,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버
+    "http://13.124.29.76",  # 배포 서버
 ]
 CORS_ALLOW_CREDENTIALS = True
 
