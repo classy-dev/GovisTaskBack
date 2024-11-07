@@ -20,7 +20,7 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -71,7 +71,10 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버
-    "http://13.124.29.76",  # 배포 서버
+    "http://localhost:5173",  # Vite 개발 서버
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://13.124.29.76",  # EC2 서버
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -258,51 +261,58 @@ SIMPLE_JWT = {
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
+    "AUTH_COOKIE": "access_token",  # JWT 쿠키 이름
+    "AUTH_COOKIE_SECURE": False if DEBUG else True,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_SAMESITE": "None" if DEBUG else "Lax",
 }
 
-# CORS 설정
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True  # 개발 환경에서만!
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ALLOW_HEADERS = ["*"]
-    CORS_ALLOW_METHODS = ["*"]
-else:
-    CORS_ALLOWED_ORIGINS = ["https://your-production-domain.com"]
-    CORS_ALLOW_CREDENTIALS = True
+# CSRF 설정 추가
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://13.124.29.76",
+]
 
-# 쿠키 설정
-SESSION_COOKIE_SAMESITE = "Lax"  # None, Lax, Strict
-CSRF_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
-
+# CORS 설정 부분을 다음과 같이 수정
 if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOW_HEADERS = [
+        "accept",
+        "accept-encoding",
+        "authorization",
+        "content-type",
+        "dnt",
+        "origin",
+        "user-agent",
+        "x-csrftoken",
+        "x-requested-with",
+    ]
+    CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+    CORS_ALLOW_METHODS = [
+        "DELETE",
+        "GET",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT",
+    ]
+
+    # 쿠키 관련 설정
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
-    CSRF_COOKIE_SAMESITE = None  # 개발 환경에서는 None으로 설정
-    SESSION_COOKIE_SAMESITE = None
+    SESSION_COOKIE_SAMESITE = "None"  # Next.js와의 통신을 위해 None으로 설정
+    CSRF_COOKIE_SAMESITE = "None"
+    CORS_ALLOW_CREDENTIALS = True
 else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://13.124.29.76",
+        # 프로덕션 도메인도 추가
+    ]
+    CORS_ALLOW_CREDENTIALS = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-
-# CORS 추가 설정
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
