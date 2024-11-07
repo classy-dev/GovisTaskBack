@@ -84,6 +84,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://43.202.120.121",
     "http://api.seolleim.kr",
     "https://api.seolleim.kr",
+    "https://go7task.vercel.app",
 ]
 
 CSRF_COOKIE_DOMAIN = None
