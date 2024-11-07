@@ -46,56 +46,28 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ORIGIN_ALLOW_ALL = False
+# CORS 설정 (보안 완화)
+CORS_ORIGIN_ALLOW_ALL = True  # 모든 출처에서의 요청 허용
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://43.202.120.121",
-    "http://api.seolleim.kr",
-    "https://api.seolleim.kr",
-]
+# CSRF 및 세션 쿠키 설정 (보안 완화)
+CSRF_COOKIE_SAMESITE = "None"  # 모든 출처에서 쿠키 허용
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
-
+# CSRF 허용 출처 (HTTPS 설정)
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://43.202.120.121",
-    "http://api.seolleim.kr",
-    "https://api.seolleim.kr",
-    "https://go7task.vercel.app",
+    "https://시연에필요한도메인1.com",
+    "https://시연에필요한도메인2.com",
+    # 필요한 모든 HTTPS URL 추가
 ]
 
 CSRF_COOKIE_DOMAIN = None
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False
 
 SESSION_COOKIE_DOMAIN = None
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = "config.urls"
@@ -220,21 +192,12 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "AUTH_COOKIE": "access_token",
-    "AUTH_COOKIE_SECURE": not DEBUG,
+    "AUTH_COOKIE_SECURE": True,  # HTTPS 환경에서만 쿠키 전송
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_PATH": "/",
-    "AUTH_COOKIE_SAMESITE": "None" if DEBUG else "Lax",
+    "AUTH_COOKIE_SAMESITE": "None",  # 모든 출처에서 JWT 쿠키 전송 허용
 }
 
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = False
-
 # HTTPS 설정
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False  # HTTPS 강제 리다이렉트 비활성화
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# 쿠키 설정
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_SAMESITE = "Lax"
