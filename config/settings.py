@@ -275,44 +275,53 @@ CSRF_TRUSTED_ORIGINS = [
     "http://13.124.29.76",
 ]
 
-# CORS 설정 부분을 다음과 같이 수정
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ALLOW_HEADERS = [
-        "accept",
-        "accept-encoding",
-        "authorization",
-        "content-type",
-        "dnt",
-        "origin",
-        "user-agent",
-        "x-csrftoken",
-        "x-requested-with",
-    ]
-    CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-    CORS_ALLOW_METHODS = [
-        "DELETE",
-        "GET",
-        "OPTIONS",
-        "PATCH",
-        "POST",
-        "PUT",
-    ]
+# CORS 설정 부분을 완전히 새로 작성
+CORS_ORIGIN_ALLOW_ALL = True  # 개발 환경에서 모든 도메인 허용
+CORS_ALLOW_CREDENTIALS = True
 
-    # 쿠키 관련 설정
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SESSION_COOKIE_SAMESITE = "None"  # Next.js와의 통신을 위해 None으로 설정
-    CSRF_COOKIE_SAMESITE = "None"
-    CORS_ALLOW_CREDENTIALS = True
-else:
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "access-control-allow-origin",
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+]
+
+# 쿠키 설정
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://13.124.29.76",
+]
+
+# 기존의 조건부 설정 제거하고 단순화
+if not DEBUG:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://13.124.29.76",
-        # 프로덕션 도메인도 추가
     ]
-    CORS_ALLOW_CREDENTIALS = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
