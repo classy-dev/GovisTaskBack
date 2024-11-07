@@ -54,6 +54,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://43.202.120.121",
     "http://api.seolleim.kr",
+    "https://api.seolleim.kr",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -82,16 +83,17 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://43.202.120.121",
     "http://api.seolleim.kr",
+    "https://api.seolleim.kr",
 ]
 
 CSRF_COOKIE_DOMAIN = None
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = True
 
 SESSION_COOKIE_DOMAIN = None
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = True
 
@@ -225,3 +227,13 @@ SIMPLE_JWT = {
 
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
+
+# HTTPS 설정
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# 쿠키 설정
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
