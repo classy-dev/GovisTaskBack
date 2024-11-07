@@ -52,7 +52,8 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://13.124.29.76",
+    "http://43.202.120.121",
+    "http://api.seolleim.kr",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -79,7 +80,8 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://13.124.29.76",
+    "http://43.202.120.121",
+    "http://api.seolleim.kr",
 ]
 
 SESSION_COOKIE_SECURE = not DEBUG
