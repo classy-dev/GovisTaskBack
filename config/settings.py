@@ -54,6 +54,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://43.202.120.121",
     "http://api.seolleim.kr",
+    "https://api.seolleim.kr",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -82,6 +83,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://43.202.120.121",
     "http://api.seolleim.kr",
+    "https://api.seolleim.kr",
 ]
 
 SESSION_COOKIE_SECURE = not DEBUG
@@ -216,3 +218,6 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_PATH": "/",
     "AUTH_COOKIE_SAMESITE": "None" if DEBUG else "Lax",
 }
+
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
