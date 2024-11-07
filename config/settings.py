@@ -275,8 +275,15 @@ CSRF_TRUSTED_ORIGINS = [
     "http://13.124.29.76",
 ]
 
-# CORS 설정 부분을 완전히 새로 작성
-CORS_ORIGIN_ALLOW_ALL = True  # 개발 환경에서 모든 도메인 허용
+# CORS 설정을 정리
+CORS_ORIGIN_ALLOW_ALL = False  # 이 설정을 False로 변경
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://13.124.29.76",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = [
@@ -298,9 +305,6 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
-    "access-control-allow-origin",
-    "access-control-allow-headers",
-    "access-control-allow-methods",
 ]
 
 # 쿠키 설정
