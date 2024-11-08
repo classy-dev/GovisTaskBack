@@ -171,20 +171,16 @@ AUTH_USER_MODEL = "accounts.User"
 
 # Simple JWT 설정 (간소화된 보안 설정)
 SIMPLE_JWT = {
-    # 기존 설정 유지
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),  # 30일 동안 액세스 토큰 유효
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    # 추가 설정
+    "ROTATE_REFRESH_TOKENS": False,  # 리프레시 토큰 회전 비활성화
+    "BLACKLIST_AFTER_ROTATION": False,  # 블랙리스트 비활성화
     "AUTH_COOKIE": "access_token",
-    "AUTH_COOKIE_REFRESH": "refresh_token",
-    "AUTH_COOKIE_SECURE": False,
-    "AUTH_COOKIE_HTTP_ONLY": True,
-    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_HTTP_ONLY": False,
     "AUTH_COOKIE_SAMESITE": "None",
+    "AUTH_COOKIE_SECURE": False,
+    "AUTH_COOKIE_PATH": "/",
 }
-
 
 # HTTPS 설정
 SECURE_SSL_REDIRECT = False
