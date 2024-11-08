@@ -464,7 +464,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         # 기본 쿼리셋 (오늘이 시작일과 마감일 사이에 있는 작업)
         queryset = Task.objects.filter(
-            start_date__date__lte=today,  # 시작일이 오늘이 나 이전
+            start_date__date__lte=today,  # 시작일이 오늘이거나 이전
             due_date__date__gte=today,  # 마감일이 오늘이거나 이후
             status__in=[
                 "TODO",
@@ -500,24 +500,24 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = request.user
         today = timezone.now().date()
 
-        # 기본 쿼셋 (마감일이 오늘 이전이고 직 완료되지 않 작업)
+        # 기본 쿼셋 (마감일 오늘 이전이고 아직 완료되지 않은 작업)
         queryset = Task.objects.filter(
             due_date__date__lt=today,  # 마감일이 오늘 이전인 작업
             status__in=["TODO", "IN_PROGRESS", "REVIEW"],  # 완료되지 않은 작업
         )
 
-        # 권한에 따른 필터링 (today_tasks와 동일한 로직)
+        # 권한에 따른 필터링
         if user.role != "ADMIN":
             if user.rank in ["DIRECTOR", "GENERAL_MANAGER"]:
                 dept = Department.objects.get(id=user.department.id)
-                if dept.parent is None:
+                if dept.parent is None:  # 본부인 경우
                     dept_ids = [dept.id]
                     child_dept_ids = Department.objects.filter(
                         parent=dept
                     ).values_list("id", flat=True)
                     dept_ids.extend(child_dept_ids)
                     queryset = queryset.filter(department_id__in=dept_ids)
-                else:
+                else:  # 팀인 경우
                     queryset = queryset.filter(department=user.department)
             elif user.role == "MANAGER":
                 queryset = queryset.filter(department=user.department)
@@ -529,7 +529,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="workload-stats")
     def workload_stats(self, request):
-        """작 부 통계"""
+        """작업 부하 통계"""
         today = timezone.now().date()
         start_date = today - timedelta(days=7)
 
@@ -548,6 +548,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 queryset = Task.objects.filter(
                     department=request.user.department
                 )
+        elif request.user.role == "MANAGER":
+            queryset = Task.objects.filter(department=request.user.department)
         else:
             queryset = Task.objects.filter(assignee=request.user)
 
@@ -590,6 +592,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 queryset = Task.objects.filter(
                     department=request.user.department
                 )
+        elif request.user.role == "MANAGER":
+            queryset = Task.objects.filter(department=request.user.department)
         else:
             queryset = Task.objects.filter(assignee=request.user)
 
@@ -609,7 +613,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="upcoming-deadlines")
     def upcoming_deadlines(self, request):
-        """다가오는 감일 작업"""
+        """다가오는 마감일 작업"""
         today = timezone.now().date()
         end_date = today + timedelta(days=7)  # 일주일 이내 마감
 
@@ -628,6 +632,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 queryset = Task.objects.filter(
                     department=request.user.department
                 )
+        elif request.user.role == "MANAGER":
+            queryset = Task.objects.filter(department=request.user.department)
         else:
             queryset = Task.objects.filter(assignee=request.user)
 
@@ -802,22 +808,25 @@ class TaskViewSet(viewsets.ModelViewSet):
         last_week = today - timedelta(days=7)
 
         # 권한에 따른 쿼리셋 필터링
-        if request.user.role == "ADMIN":
-            queryset = Task.objects.all()
-        elif request.user.rank in ["DIRECTOR", "GENERAL_MANAGER"]:
-            if request.user.department.parent is None:
-                dept_ids = [request.user.department.id]
-                child_dept_ids = Department.objects.filter(
-                    parent=request.user.department
-                ).values_list("id", flat=True)
-                dept_ids.extend(child_dept_ids)
-                queryset = Task.objects.filter(department_id__in=dept_ids)
+        queryset = Task.objects.all()
+        user = request.user
+
+        # ADMIN은 모든 작업 조회 가능
+        if user.role != "ADMIN":
+            if user.rank in ["DIRECTOR", "GENERAL_MANAGER"]:
+                if user.department.parent is None:  # 본부장인 경우
+                    dept_ids = [user.department.id]
+                    child_dept_ids = Department.objects.filter(
+                        parent=user.department
+                    ).values_list("id", flat=True)
+                    dept_ids.extend(child_dept_ids)
+                    queryset = queryset.filter(department_id__in=dept_ids)
+                else:  # 팀장인 경우
+                    queryset = queryset.filter(department=user.department)
+            elif user.role == "MANAGER":
+                queryset = queryset.filter(department=user.department)
             else:
-                queryset = Task.objects.filter(
-                    department=request.user.department
-                )
-        else:
-            queryset = Task.objects.filter(assignee=request.user)
+                queryset = queryset.filter(assignee=user)
 
         # 이번 주 통계
         total_tasks = queryset.count()
@@ -827,7 +836,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             due_date__date__lt=today, status__in=["TODO", "IN_PROGRESS"]
         ).count()
 
-        # 지 주 통계
+        # 지난 주 통계
         last_week_queryset = queryset.filter(created_at__date__lte=last_week)
         last_week_total = last_week_queryset.count()
         last_week_in_progress = last_week_queryset.filter(
