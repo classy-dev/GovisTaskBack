@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Avg, Q, F, Sum
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from tasks.models import Task, TaskEvaluation
 from django.db.models.functions import TruncDate
 from django.contrib.auth import get_user_model
@@ -44,6 +44,14 @@ class ReportViewSet(viewsets.ViewSet):
                 status=400,
             )
 
+        # 날짜 문자열을 datetime 객체로 변환
+        start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+        end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        # 시작일은 00:00:00, 종료일은 23:59:59로 설정
+        start_datetime = timezone.make_aware(datetime.combine(start_datetime, time.min))
+        end_datetime = timezone.make_aware(datetime.combine(end_datetime, time.max))
+
         # 다른 직원의 보고서를 조회하려는 경우 권한 체크
         if employee_id and employee_id != str(user.id):
             target_user = User.objects.get(id=employee_id)
@@ -65,10 +73,17 @@ class ReportViewSet(viewsets.ViewSet):
         else:
             report_user = user
 
-        # 보고서 데이터 조회 로직
+        # 보고서 데이터 조회 로직 수정
+        # 시작일과 종료일이 지정된 기간 내에 있는 작업 필터링
         tasks = self.get_queryset().filter(
-            assignee=report_user, created_at__range=[start_date, end_date]
+            assignee=report_user,
+            start_date__range=[start_datetime, end_datetime],
+            due_date__range=[start_datetime, end_datetime]
         )
+
+        print(f"Filtering dates - Start: {start_datetime}, End: {end_datetime}")
+        print(f"Tasks count: {tasks.count()}")
+        print(f"Generated SQL: {tasks.query}")
 
         # 선택된 기간에 작업이 없는 경우
         if not tasks.exists():
