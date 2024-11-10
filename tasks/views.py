@@ -34,6 +34,7 @@ from django.db.models.functions import Concat
 import math
 from django.db.models import Avg
 from rest_framework.permissions import IsAuthenticated
+from datetime import time
 
 User = get_user_model()
 
@@ -105,7 +106,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         department_id = self.request.query_params.get("department")
         assignee_id = self.request.query_params.get("assignee")
 
-        # assignee_id가 있는 경우 (특정 사용자의 작업 조회)
+        # assignee_id가 는 경우 (특정 사용자의 작업 조회)
         if assignee_id:
             queryset = queryset.filter(assignee_id=assignee_id)
             # 본부장/이사는 모든 직원의 작업을 볼 수 있음
@@ -188,10 +189,25 @@ class TaskViewSet(viewsets.ModelViewSet):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-        if start_date:
-            queryset = queryset.filter(start_date__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(due_date__lte=end_date)
+        if start_date and end_date:
+            # 날짜 문자열을 datetime 객체로 변환
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            
+            # 시작일은 00:00:00, 종료일은 23:59:59로 설정
+            start_datetime = timezone.make_aware(datetime.combine(start_datetime, time.min))
+            end_datetime = timezone.make_aware(datetime.combine(end_datetime, time.max))
+
+            print(f"Filtering dates - Start: {start_datetime}, End: {end_datetime}")
+            print(f"Initial queryset count: {queryset.count()}")
+            
+            queryset = queryset.filter(
+                start_date__range=[start_datetime, end_datetime],
+                due_date__range=[start_datetime, end_datetime]
+            )
+            
+            print(f"After date filtering count: {queryset.count()}")
+            print(f"Generated SQL: {queryset.query}")
 
         return queryset.distinct().order_by("start_date")
 
@@ -678,7 +694,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                         "ASSISTANT_MANAGER",
                         "MANAGER",
                         "DEPUTY_GENERAL_MANAGER",
-                    ],  # 본부장/이사 제외
+                    ],  # 본부장/이사 ���외
                 )
             else:
                 team_members = User.objects.filter(
@@ -777,7 +793,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 "IN_PROGRESS": "진행중",
                 "REVIEW": "검토중",
                 "DONE": "완료",
-                "HOLD": "보류",
+                "HOLD": "보���",
             }
             return status_map.get(status, status)
 
@@ -925,7 +941,7 @@ class TaskHistoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(changed_by=self.request.user)
 
-    # Task 상태 변경 시 히스토리 자동 생성을 위한 메서드 추가
+    # Task 상태 변경 시 히스토리 자동 성을 위한 메서드 추가
     @classmethod
     def create_history(
         cls, task, previous_status, new_status, user, comment=""
@@ -1056,7 +1072,7 @@ class TaskEvaluationViewSet(viewsets.ModelViewSet):
 
         # 평가 삭제 권한 체크
         if not self.can_manage_evaluation(user, instance):
-            raise PermissionError("이 평가를 삭제할 권한이 없습니다.")
+            raise PermissionError("이 평가를 제할 권한이 없습니다.")
 
         instance.delete()
 
