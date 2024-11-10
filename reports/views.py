@@ -335,14 +335,15 @@ class ReportViewSet(viewsets.ViewSet):
 
     def get_team_comparison(self, user, start_date, end_date, my_stats):
         """팀 비교 통계 계산"""
-        # 팀의 전체 작업 (나를 제외한)
+        # 팀의 전체 작업 (자신 포함)
         team_tasks = Task.objects.filter(
-            assignee__department=user.department,
+            assignee__department=user.department,  # 같은 팀의 작업
+            assignee__is_active=True,  # 활성 사용자만
             start_date__range=[start_date, end_date],
             due_date__range=[start_date, end_date],
             status="DONE",
             completed_at__isnull=False
-        ).exclude(assignee=user)
+        )  # 자신의 작업도 포함
 
         # 팀 평균 완료 시간 계산
         team_avg_completion_time = team_tasks.aggregate(
@@ -355,9 +356,10 @@ class ReportViewSet(viewsets.ViewSet):
             minutes = int((team_avg_completion_time.total_seconds() % 3600) // 60)
             team_avg_completion_time_str = f"{hours}h {minutes}m"
 
-        # 팀 평균 평가 점수 계산
+        # 팀 평균 평가 점수 계산 (완료된 작업만)
         team_score = TaskEvaluation.objects.filter(
-            task__in=team_tasks
+            task__in=team_tasks,
+            task__status="DONE"
         ).aggregate(avg_score=Avg("performance_score"))["avg_score"] or 0
 
         # 상대적 효율성 계산
@@ -376,40 +378,55 @@ class ReportViewSet(viewsets.ViewSet):
             "relative_efficiency": round(relative_efficiency, 1)
         }
 
-    def get_department_comparison(self, user, start_date, end_date):
+    def get_department_comparison(self, user, start_date, end_date, my_stats):
         """부서 비교 통계 계산"""
         dept = user.department
         if dept.parent:  # 팀인 경우 상위 부서(본부) 기준
             dept = dept.parent
 
-        # 내 작업 데이터를 한 번만 조회하여 재사용
-        my_tasks = Task.objects.filter(
-            assignee=user,
-            start_date__range=[start_date, end_date],
-            due_date__range=[start_date, end_date],
-            status="DONE",
-            completed_at__isnull=False
-        )
-
-        # 부서의 전체 작업 (나를 제외한)
+        # 부서의 전체 작업 (자신 포함)
         dept_tasks = Task.objects.filter(
             Q(assignee__department=dept) |  # 본부 직속 구성원
             Q(assignee__department__parent=dept),  # 산하 팀 구성원
+            assignee__is_active=True,  # 활성 사용자만
             start_date__range=[start_date, end_date],
             due_date__range=[start_date, end_date],
             status="DONE",
             completed_at__isnull=False
-        ).exclude(assignee=user)
+        )  # 자신의 작업도 포함
 
-        # 부서 비교와 부서 비교 시 my_tasks를 전달
-        my_stats = self.calculate_user_stats(my_tasks)
+        # 부서 평균 완료 시간 계산
+        dept_avg_completion_time = dept_tasks.aggregate(
+            avg_time=Avg(F("completed_at") - F("start_date"))
+        )["avg_time"]
+        
+        dept_avg_completion_time_str = "0h 0m"
+        if dept_avg_completion_time:
+            hours = int(dept_avg_completion_time.total_seconds() // 3600)
+            minutes = int((dept_avg_completion_time.total_seconds() % 3600) // 60)
+            dept_avg_completion_time_str = f"{hours}h {minutes}m"
 
-        # 부서 비교와 부서 비교 시 my_tasks를 전달
-        comparison_stats = {
-            "department_comparison": self.get_department_comparison(report_user, start_date, end_date, my_stats)
+        # 부서 평균 평가 점수 계산 (완료된 작업만)
+        dept_score = TaskEvaluation.objects.filter(
+            task__in=dept_tasks,
+            task__status="DONE"
+        ).aggregate(avg_score=Avg("performance_score"))["avg_score"] or 0
+
+        # 상대적 효율성 계산
+        relative_efficiency = 0
+        if my_stats["avg_completion_time"] and dept_avg_completion_time:
+            my_seconds = my_stats["avg_completion_time"].total_seconds()
+            dept_seconds = dept_avg_completion_time.total_seconds()
+            if my_seconds > 0:
+                relative_efficiency = (dept_seconds / my_seconds) * 100
+
+        return {
+            "dept_avg_completion_time": dept_avg_completion_time_str,
+            "dept_avg_score": round(dept_score, 1),
+            "my_completion_time": my_stats["completion_time"],
+            "my_score": my_stats["score"],
+            "relative_efficiency": round(relative_efficiency, 1)
         }
-
-        return comparison_stats
 
     def can_view_team_stats(self, user):
         return (
@@ -593,52 +610,4 @@ class ReportViewSet(viewsets.ViewSet):
             "completion_time": completion_time,
             "score": round(score, 1),
             "avg_completion_time": avg_completion_time
-        }
-
-    def get_department_comparison(self, user, start_date, end_date, my_stats):
-        """부서 비교 통계 계산"""
-        dept = user.department
-        if dept.parent:  # 팀인 경우 상위 부서(본부) 기준
-            dept = dept.parent
-
-        # 부서의 전체 작업 (나를 제외한)
-        dept_tasks = Task.objects.filter(
-            Q(assignee__department=dept) |  # 본부 직속 구성원
-            Q(assignee__department__parent=dept),  # 산하 팀 구성원
-            start_date__range=[start_date, end_date],
-            due_date__range=[start_date, end_date],
-            status="DONE",
-            completed_at__isnull=False
-        ).exclude(assignee=user)
-
-        # 부서 평균 완료 시간 계산
-        dept_avg_completion_time = dept_tasks.aggregate(
-            avg_time=Avg(F("completed_at") - F("start_date"))
-        )["avg_time"]
-        
-        dept_avg_completion_time_str = "0h 0m"
-        if dept_avg_completion_time:
-            hours = int(dept_avg_completion_time.total_seconds() // 3600)
-            minutes = int((dept_avg_completion_time.total_seconds() % 3600) // 60)
-            dept_avg_completion_time_str = f"{hours}h {minutes}m"
-
-        # 부서 평균 평가 점수 계산
-        dept_score = TaskEvaluation.objects.filter(
-            task__in=dept_tasks
-        ).aggregate(avg_score=Avg("performance_score"))["avg_score"] or 0
-
-        # 상대적 효율성 계산
-        relative_efficiency = 0
-        if my_stats["avg_completion_time"] and dept_avg_completion_time:
-            my_seconds = my_stats["avg_completion_time"].total_seconds()
-            dept_seconds = dept_avg_completion_time.total_seconds()
-            if my_seconds > 0:
-                relative_efficiency = (dept_seconds / my_seconds) * 100
-
-        return {
-            "dept_avg_completion_time": dept_avg_completion_time_str,
-            "dept_avg_score": round(dept_score, 1),
-            "my_completion_time": my_stats["completion_time"],
-            "my_score": my_stats["score"],
-            "relative_efficiency": round(relative_efficiency, 1)
         }
