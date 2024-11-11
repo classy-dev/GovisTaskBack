@@ -60,19 +60,25 @@ tasks_taskevaluation (te):
   - evaluator_id references accounts_user(id)
   - performance_score: 1-5
 
+Query Rules for Department Counts:
+1. If question contains "직속" -> Count only direct members (parent_id IS NULL)
+2. Otherwise -> Count all members (direct + team members)
+
 Example Queries:
 
-1. Count employees in 백엔드팀:
+1. Count only direct employees in 푸드테크본부:
 SELECT COUNT(*) FROM accounts_user u 
 JOIN organizations_department d ON u.department_id = d.id 
-WHERE d.name LIKE '%백엔드%' AND u.is_active = true;
+WHERE d.name LIKE '%푸드테크%' AND d.parent_id IS NULL 
+AND u.is_active = true;
 
-2. Count all employees in 푸드테크본부 (including teams):
+2. Count all employees in 푸드테크본부 (headquarters + teams):
 SELECT COUNT(*) FROM accounts_user u 
 JOIN organizations_department d ON u.department_id = d.id 
 LEFT JOIN organizations_department p ON d.parent_id = p.id 
 WHERE (d.name LIKE '%푸드테크%' AND d.parent_id IS NULL) 
-   OR (p.name LIKE '%푸드테크%') AND u.is_active = true;
+   OR (p.name LIKE '%푸드테크%' AND d.parent_id IS NOT NULL) 
+AND u.is_active = true;
 
 3. Find best performing employee:
 SELECT u.last_name || u.first_name as name, d.name as dept, 
