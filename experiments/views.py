@@ -73,6 +73,8 @@ WHERE d.name LIKE '%푸드테크%' AND d.parent_id IS NULL
 AND u.is_active = true;
 
 2. Count all employees in 푸드테크본부 (headquarters + teams):
+너가 기억해야하는 것 중 중요한것 중 하나인데, 보통 사람들은 본수 사람 예를 들어 푸드테크본부를 물을때, 푸드테크본부직속뿐 아니라 산하팀까지를 포함해서 생각하거든?
+그런데 너가 딱 푸드테크직속만 알려주는 순간 혼란이 오는거야. 무슨말인지 알지? 그러니 사람들이 본부를 물을때는 산하팀까지 알려줘야하는거고, 본부직속으로 명시적으로 물으면 그때 너는 직속만 알려줘야해.
 SELECT COUNT(*) FROM accounts_user u 
 JOIN organizations_department d ON u.department_id = d.id 
 LEFT JOIN organizations_department p ON d.parent_id = p.id 
