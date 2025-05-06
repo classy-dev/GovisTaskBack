@@ -1,6 +1,14 @@
 # GOPIZZA Task Management System (Govis Task) - Backend
 
-<img src="public/images/logo.png" alt="GOPIZZA Logo" width="200"/>
+![대쉬보드 이미지](https://github.com/futureplanning/front-rnd/blob/master/public/dash_boadrd2.png?raw=true)
+
+![작업,일정 이미지](https://raw.githubusercontent.com/futureplanning/front-rnd/refs/heads/master/public/tasks_list.png)
+
+![평가 및 성과관리 이미지](https://raw.githubusercontent.com/futureplanning/front-rnd/refs/heads/master/public/evalution.png)
+
+![Report 이미지](https://raw.githubusercontent.com/futureplanning/front-rnd/refs/heads/master/public/report.png)
+
+![LLM](https://raw.githubusercontent.com/futureplanning/front-rnd/refs/heads/master/public/llm.png)
 
 ## 프로젝트 개요
 
