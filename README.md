@@ -17,21 +17,22 @@ Govis Task Backend는 고피자의 혁신적인 업무 관리 시스템의 서�
 ## 기술 스택
 
 ### 백엔드 프레임워크
+
 - **언어**: Python 3.11+
 - **웹 프레임워크**: Django 5.0, Django REST Framework 3.14
 - **인증**: JWT (Simple JWT)
 - **문서화**: drf-spectacular (OpenAPI 3.0)
 
 ### 데이터베이스
+
 - **RDBMS**: PostgreSQL
 - **ORM**: Django ORM
 
 ### AI 및 데이터 분석
+
 - **LLM 통합**: LangChain 0.3.7
 - **AI 모델**: Anthropic Claude
 - **데이터 처리**: NumPy, SQLAlchemy
-
-
 
 ## 프로젝트 구조
 
@@ -69,8 +70,6 @@ GovisTaskBack/
 - `/api/token/refresh/` - JWT 토큰 갱신
 - `/api/docs/` - API 문서 (Swagger UI)
 
-
-
 ## 주요 특징
 
 ### 1. RESTful API 구조
@@ -84,7 +83,7 @@ GovisTaskBack/
 - 작업 생성, 조회, 수정, 삭제 기능
 - 작업 상태 관리 및 이력 추적
 - 실시간 작업 시간 기록 및 분석
-- 작업 의존성 관리 
+- 작업 의존성 관리
 
 ### 3. 조직 및 사용자 관리
 
@@ -110,10 +109,10 @@ GovisTaskBack/
 - 질의응답 기반 데이터 분석
 - 업무 패턴 및 인사이트 도출
 
-
 ## 설치 및 실행 방법
 
 ### 개발 환경 요구사항
+
 - Python 3.11 이상
 - PostgreSQL 14 이상
 - pip 또는 virtualenv
@@ -150,23 +149,29 @@ API 문서는 [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/)
 ## 핵심 구현 특징
 
 ### 1. 권한 기반 접근 제어
+
 사용자의 역할과 직급에 따라 API 접근 권한을 세분화하여, 데이터 보안과 업무 흐름에 적합한 권한 관리를 구현했습니다.
 
 ### 2. 작업 생명주기 관리
+
 작업 상태 변경을 추적하고, 각 상태별 필요한 검증과 비즈니스 로직을 적용하여 완전한 작업 생명주기 관리를 제공합니다.
 
 ### 3. 성과 평가 및 분석
+
 작업 난이도, 소요 시간, 평가 점수 등 다양한 지표를 수집하고 분석하여 객관적인 성과 평가 시스템을 구현했습니다.
 
 ### 4. 알림 시스템
+
 작업 상태 변경, 새 코멘트 추가, 마감일 임박 등 중요 이벤트 발생 시 실시간 알림을 제공하는 시스템을 구현했습니다.
 
 ### 5. AI 기반 데이터 분석
+
 LangChain과 Anthropic Claude 모델을 활용하여 자연어 기반의 데이터 분석 및 인사이트 도출 기능을 구현했습니다.
 
 ## 데이터 모델
 
 ### 주요 모델
+
 - **User**: 직급, 역할, 부서 정보를 포함한 사용자 모델
 - **Department**: 조직 구조를 나타내는 부서 모델
 - **Task**: 작업 관리의 핵심 모델로 상태, 우선순위, 담당자, 마감일 등 포함
@@ -176,7 +181,7 @@ LangChain과 Anthropic Claude 모델을 활용하여 자연어 기반의 데이�
 - **TaskTimeLog**: 작업 시간 기록
 - **TaskEvaluation**: 작업 성과 평가
 
-## 비즈니스 가치
+## GOPIZZA Task Management API 특징
 
 1. **효율적인 데이터 관리**: 구조화된 API를 통해 업무 데이터의 효율적인 생성, 조회, 수정, 삭제를 지원
 2. **보안 및 규정 준수**: 역할 기반 접근 제어로 데이터 보안 및 규정 준수 보장
